@@ -20,7 +20,7 @@
       "filename": "force-app/main/default/namedCredentials/PantherSchools.namedCredential-meta.xml",
       "stringToReplace": "https://api.dev.pantherschools.com/v1",
       "replaceWithEnv": "PANTHER_SCHOOL_API_URL",
-      "allowUnsetEnvVariable": true
+      "allowUnsetEnvVariable": false
     },
     {
       "glob": "force-app/main/default/classes/*.xml",
