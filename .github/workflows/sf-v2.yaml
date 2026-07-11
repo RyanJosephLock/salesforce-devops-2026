@@ -1,0 +1,25 @@
+name: "Salesforce Pipeline"
+run-name: "Salesforce Pipeline Run"
+
+on:
+  push:
+
+jobs:
+  setup-salesforce:
+    name: "Setup salesforce"
+    run:on: ubuntu-latest
+
+    steps:
+      - name: "Install Salesforce CLI"
+        run: npm install --global @salesforce/cli@latest
+
+      - name: "Check CLI version"
+        run: sf --version
+
+      - name: "Install Salesforce Code Analyser"
+        run: |
+          sf --help
+          sf plugins install code-analyzer
+        
+      - name: "Authenticate with Salesforce"
+        run: 
