@@ -22,4 +22,10 @@ jobs:
           sf plugins install code-analyzer
         
       - name: "Authenticate with Salesforce"
-        run: 
+        env:
+          SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL_PROD }}
+        run: |
+          echo "$SFDX_AUTH_URL_EXACTPATH" > ./sfdxAuthUrl.txt
+          sf org login sfdx-url --sfdx-url-file ./sfdxAuthUrl.txt --alias ExactPath --set-default
+          rm ./sfdxAuthUrl.txt
+        
