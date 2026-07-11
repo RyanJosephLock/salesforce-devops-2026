@@ -32,4 +32,9 @@ jobs:
           echo "$SFDX_AUTH_URL" > ./sfdxAuthUrl.txt
           sf org login sfdx-url --sfdx-url-file ./sfdxAuthUrl.txt --alias ExactPath --set-default
           rm ./sfdxAuthUrl.txt
-        
+
+      - name: "Deploy to Salesforce Org"
+        run: sf project deploy start --source-dir force-app/main/default --target-org ExactPath --wait 45
+      
+      - name: "Assign Permission Set"
+        run: sf org assign permset --name Onboarding_Manager --on-behalf-of ExactPath --target-org ExactPath --wait 5
