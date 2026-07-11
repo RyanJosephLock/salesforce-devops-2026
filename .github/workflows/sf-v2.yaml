@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
+      - name: "Checkout code"
+        uses: actions/checkout@6.0.2
+
       - name: "Install Salesforce CLI"
         run: npm install --global @salesforce/cli@latest
 
@@ -23,9 +27,10 @@ jobs:
         
       - name: "Authenticate with Salesforce"
         env:
-          SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL_PROD }}
+          SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL_EXACTPATH }}
         run: |
-          echo "$SFDX_AUTH_URL_EXACTPATH" > ./sfdxAuthUrl.txt
+          echo 
+          echo "$SFDX_AUTH_URL" > ./sfdxAuthUrl.txt
           sf org login sfdx-url --sfdx-url-file ./sfdxAuthUrl.txt --alias ExactPath --set-default
           rm ./sfdxAuthUrl.txt
         
