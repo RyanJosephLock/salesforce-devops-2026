@@ -29,7 +29,6 @@ jobs:
         env:
           SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL_EXACTPATH }}
         run: |
-          echo "$SFDX_AUTH_URL"
           echo "$SFDX_AUTH_URL" > ./sfdxAuthUrl.txt
           sf org login sfdx-url --sfdx-url-file ./sfdxAuthUrl.txt --alias ExactPath --set-default
           rm ./sfdxAuthUrl.txt
