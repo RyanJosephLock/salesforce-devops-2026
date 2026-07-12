@@ -12,9 +12,10 @@ on:
       - release/**
       - UAT
       - integration
+      - main
   pull_request:
     types:
-      - open
+      - opened
       - closed
     paths: 
       - 'force-app/**'
@@ -23,6 +24,7 @@ on:
       - release/**
       - UAT
       - integration
+      - main
 
 env:
   ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
