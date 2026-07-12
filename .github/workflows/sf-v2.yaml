@@ -63,3 +63,4 @@ jobs:
       
       - name: "Assign Permission Set"
         run: sf org assign permset --name Onboarding_Manager --on-behalf-of exactpath@pboedition.com --target-org ExactPath
+        continue-on-error: true
