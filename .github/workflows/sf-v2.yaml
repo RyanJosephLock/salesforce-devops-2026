@@ -5,7 +5,7 @@ on:
   push:
 
 env:
-  ORG_DEFAULT_ALIAS: 'ExactPath'
+  ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
   NODE_VERSION: '>=20.9.0'
   JAVA_VERSION: '>=11'
   PYTHON_VERSION: '>=3.10'
@@ -14,6 +14,7 @@ jobs:
   setup-salesforce:
     name: "Setup salesforce"
     runs-on: ubuntu-latest
+    environment: Production
 
     steps:
 
