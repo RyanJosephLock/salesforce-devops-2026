@@ -14,17 +14,40 @@ jobs:
       - name: "Checkout code"
         uses: actions/checkout@v7.0.0
 
+      # SALESFORCE CODE ANALYZER PREREQUISITES
+      - name: Ensure node v20.9.0 or greater
+        uses: actions/setup-node@v5
+        with:
+          node-version: '>=20.9.0'
+      - name: Ensure java v11 or greater
+        uses: actions/setup-java@v5
+        with:
+          java-version: '>=11'
+          distribution: 'zulu'
+      - name: Ensure python v3.10 or greater
+        uses: actions/setup-python@v6
+        with:
+          python-version: '>=3.10'
+
       - name: "Install Salesforce CLI"
         run: npm install --global @salesforce/cli@latest
 
       - name: "Check CLI version"
         run: sf --version
 
-      - name: "Install Salesforce Code Analyser"
+      - name: "Install Salesforce Code Analyzer"
         run: |
           sf --help
           sf plugins install code-analyzer
-        
+
+      - name: Run Salesforce Code Analyzer
+        id: run-code-analyzer
+        uses: forcedotcom/run-code-analyzer@v2
+        with:
+          run-arguments: --workspace . --view detail --output-file sfca_results.html --output-file sfca_results.json
+          results-artifact-name: salesforce-code-analyzer-results
+          github-token: ${{ github.token }}
+
       - name: "Authenticate with Salesforce"
         env:
           SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL_EXACTPATH }}
