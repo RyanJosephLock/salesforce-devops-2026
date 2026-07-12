@@ -3,6 +3,7 @@ run-name: "Salesforce Pipeline Run"
 
 on:
   push:
+    paths: 'force-app/**'
 
 env:
   ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
@@ -76,8 +77,11 @@ jobs:
         env:
           SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL_EXACTPATH }}
         run: |
+          # Read the secret
           echo "$SFDX_AUTH_URL" > ./sfdxAuthUrl.txt
+          # Use the created file
           sf org login sfdx-url --sfdx-url-file ./sfdxAuthUrl.txt --alias $ORG_DEFAULT_ALIAS --set-default
+          # Delete the file
           rm ./sfdxAuthUrl.txt
 
       - name: "Deploy to Salesforce Org"
