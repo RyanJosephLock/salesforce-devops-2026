@@ -4,6 +4,12 @@ run-name: "Salesforce Pipeline Run"
 on:
   push:
 
+env:
+  ORG_DEFAULT_ALIAS: 'ExactPath'
+  NODE_VERSION: '>=20.9.0'
+  JAVA_VERSION: '>=11'
+  PYTHON_VERSION: '>=3.10'
+
 jobs:
   setup-salesforce:
     name: "Setup salesforce"
@@ -13,24 +19,27 @@ jobs:
 
       - name: "Checkout code"
         uses: actions/checkout@v7.0.0
-
-      - name: "Github context variable"
-        run: echo '${{ toJSON(github) }}'
+      - name: "Print ENV Variables"
+        run: |
+          echo "Default org is $ORG_DEFAULT_ALIAS"
+          echo "Node version is $NODE_VERSION"
+          echo "Java version is $JAVA_VERSION"
+          echo "Python version is $PYTHON_VERSION"
 
       # SALESFORCE CODE ANALYZER PREREQUISITES
       - name: Ensure node v20.9.0 or greater
         uses: actions/setup-node@v5
         with:
-          node-version: '>=20.9.0'
+          node-version: $NODE_VERSION
       - name: Ensure java v11 or greater
         uses: actions/setup-java@v5
         with:
-          java-version: '>=11'
+          java-version: $JAVA_VERSION
           distribution: 'zulu'
       - name: Ensure python v3.10 or greater
         uses: actions/setup-python@v6
         with:
-          python-version: '>=3.10'
+          python-version: $PYTHON_VERSION
 
       - name: "Install Salesforce CLI"
         run: npm install --global @salesforce/cli@latest
@@ -65,14 +74,14 @@ jobs:
           SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL_EXACTPATH }}
         run: |
           echo "$SFDX_AUTH_URL" > ./sfdxAuthUrl.txt
-          sf org login sfdx-url --sfdx-url-file ./sfdxAuthUrl.txt --alias ExactPath --set-default
+          sf org login sfdx-url --sfdx-url-file ./sfdxAuthUrl.txt --alias $ORG_DEFAULT_ALIAS --set-default
           rm ./sfdxAuthUrl.txt
 
       - name: "Deploy to Salesforce Org"
         env:
           PANTHER_SCHOOL_API_URL: ${{ secrets.PANTHER_SCHOOL_API_URL }}
-        run: sf project deploy start --source-dir force-app/main/default --target-org ExactPath --wait 45
+        run: sf project deploy start --source-dir force-app/main/default --target-org $ORG_DEFAULT_ALIAS --wait 45
       
       - name: "Assign Permission Set"
-        run: sf org assign permset --name Onboarding_Manager --on-behalf-of exactpath@pboedition.com --target-org ExactPath
+        run: sf org assign permset --name Onboarding_Manager --on-behalf-of exactpath@pboedition.com --target-org $ORG_DEFAULT_ALIAS
         continue-on-error: true
