@@ -3,7 +3,13 @@ run-name: "Salesforce Pipeline Run"
 
 on:
   push:
-    paths: 'force-app/**'
+    paths: 
+      - 'force-app/**'
+    branches:
+      - hotfix/**
+      - release/**
+      - UAT
+      - integration
 
 env:
   ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
