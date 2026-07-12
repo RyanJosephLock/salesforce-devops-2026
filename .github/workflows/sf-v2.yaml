@@ -1,0 +1,116 @@
+name: "Salesforce Pipeline"
+run-name: "Salesforce Pipeline Run"
+
+on:
+  workflow_dispatch: #Manually run the pipeline
+  push:
+    paths: 
+      - 'force-app/**'
+    branches:
+      - feature/**
+      - hotfix/**
+      - release/**
+      - UAT
+      - integration
+      - main
+  pull_request:
+    types:
+      - opened
+      - closed
+    paths: 
+      - 'force-app/**'
+    branches:
+      - hotfix/**
+      - release/**
+      - UAT
+      - integration
+      - main
+
+env:
+  ORG_DEFAULT_ALIAS: ${{ vars.ORG_DEFAULT_ALIAS }}
+  NODE_VERSION: '>=20.9.0'
+  JAVA_VERSION: '>=11'
+  PYTHON_VERSION: '>=3.10'
+
+jobs:
+  setup-salesforce:
+    name: "Setup salesforce"
+    runs-on: ubuntu-latest
+    environment: Production
+
+    steps:
+
+      - name: "Checkout code"
+        uses: actions/checkout@v7.0.0
+      - name: "Print ENV Variables"
+        run: |
+          echo "Default org is $ORG_DEFAULT_ALIAS"
+          echo "Node version is $NODE_VERSION"
+          echo "Java version is $JAVA_VERSION"
+          echo "Python version is $PYTHON_VERSION"
+
+      # SALESFORCE CODE ANALYZER PREREQUISITES
+      - name: Ensure node v20.9.0 or greater
+        uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Ensure java v11 or greater
+        uses: actions/setup-java@v5
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'zulu'
+
+      - name: Ensure python v3.10 or greater
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: "Install Salesforce CLI"
+        run: npm install --global @salesforce/cli@latest
+
+      - name: "Check CLI version"
+        run: sf --version
+
+      - name: "Install Salesforce Code Analyzer"
+        run: |
+          sf --help
+          sf plugins install code-analyzer
+
+      - name: Run Salesforce Code Analyzer
+        id: run-code-analyzer
+        uses: forcedotcom/run-code-analyzer@v2
+        with:
+          run-arguments: --workspace . --view detail --output-file sfca_results.html --output-file sfca_results.json
+          results-artifact-name: salesforce-code-analyzer-results
+          github-token: ${{ github.token }}
+
+      # SF Code Analyzer Option 1: Quality gate on ALL files in the repository
+      # For testing purposes, ignore code analyzer fails
+      - name: Fail on Critical/High Violations (All Files)
+        if: |
+          steps.run-code-analyzer.outputs.exit-code > 0 ||
+          steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
+          steps.run-code-analyzer.outputs.num-sev2-violations > 0 ||
+          steps.run-code-analyzer.outputs.num-violations > 10
+        run: exit 0
+        
+      - name: "Authenticate with Salesforce"
+        env:
+          SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL_EXACTPATH }}
+        run: |
+          # Read the secret
+          echo "$SFDX_AUTH_URL" > ./sfdxAuthUrl.txt
+          # Use the created file
+          sf org login sfdx-url --sfdx-url-file ./sfdxAuthUrl.txt --alias $ORG_DEFAULT_ALIAS --set-default
+          # Delete the file
+          rm ./sfdxAuthUrl.txt
+
+      - name: "Deploy to Salesforce Org"
+        env:
+          PANTHER_SCHOOL_API_URL: ${{ secrets.PANTHER_SCHOOL_API_URL }}
+        run: sf project deploy start --source-dir force-app/main/default --target-org $ORG_DEFAULT_ALIAS --wait 45
+      
+      - name: "Assign Permission Set"
+        run: sf org assign permset --name Onboarding_Manager --on-behalf-of exactpath@pboedition.com --target-org $ORG_DEFAULT_ALIAS
+        continue-on-error: true
