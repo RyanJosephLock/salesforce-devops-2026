@@ -77,10 +77,9 @@ jobs:
           steps.run-code-analyzer.outputs.num-sev1-violations > 0 ||
           steps.run-code-analyzer.outputs.num-sev2-violations > 0 ||
           steps.run-code-analyzer.outputs.num-violations > 10
-        run: exit 1
         # For testing purposes, ignore code analyzer fails
-        continue-on-error: true
-
+        # run: exit 1
+        
       - name: "Authenticate with Salesforce"
         env:
           SFDX_AUTH_URL: ${{ secrets.SFDX_AUTH_URL_EXACTPATH }}
